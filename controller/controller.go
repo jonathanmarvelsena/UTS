@@ -13,7 +13,14 @@ func GetAllRooms(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
 
-	gameIDStr := r.URL.Query().Get("id_game")
+	err := r.ParseForm()
+	if err != nil {
+		log.Println(err)
+		SendErrorResponse(w, 400, "Invalid form data")
+		return
+	}
+
+	gameIDStr := r.URL.Query().Get("id")
 	gameID, err := strconv.Atoi(gameIDStr)
 	if err != nil {
 		log.Println(err)
@@ -21,7 +28,7 @@ func GetAllRooms(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := "SELECT * FROM rooms WHERE id_game = ?"
+	query := "SELECT id, room_name FROM rooms WHERE id_game = ?"
 
 	rows, err := db.Query(query, gameID)
 	if err != nil {
@@ -35,7 +42,7 @@ func GetAllRooms(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		var room m.Room
-		err := rows.Scan(&room.ID, &room.Room_name, &room.ID_game)
+		err := rows.Scan(&room.ID, &room.Room_name)
 		if err != nil {
 			log.Println(err)
 			SendErrorResponse(w, 500, "Internal Server Error")
