@@ -1,10 +1,11 @@
 package controller
 
 import (
+	m "UTS/model"
+	"encoding/json"
 	"log"
 	"net/http"
-
-	m "UTS/model"
+	"strconv"
 )
 
 func GetAllRooms(w http.ResponseWriter, r *http.Request) {
@@ -13,32 +14,54 @@ func GetAllRooms(w http.ResponseWriter, r *http.Request) {
 
 	gameIDStr := r.URL.Query().Get("id_game")
 	gameID, err := strconv.Atoi(gameIDStr)
-
-
-	query := "SELECT * FROM rooms"
-
-	rows, err := db.Query(query)
 	if err != nil {
 		log.Println(err)
+		SendErrorResponse(w, 400, "Invalid game ID")
 		return
 	}
 
-	SendSuccessResponse(w, 200, "succes")
-}
+	query := "SELECT * FROM rooms WHERE id_game = ?"
 
-func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	db := connect()
-	defer db.Close()
-
-	userID := mux.Vars(r)["id"]
-
-	var count int
-	err := db.QueryRow("SELECT COUNT(*) FROM users WHERE id = ?", userID).Scan(&count)
+	rows, err := db.Query(query, gameID)
 	if err != nil {
-		SendErrorResponse(w, 500, "error preparing SQL statement")
+		log.Println(err)
+		SendErrorResponse(w, 500, "Internal Server Error")
 		return
 	}
-	if count == 0 {
-		SendErrorResponse(w, 404, "user not found")
+	defer rows.Close()
+
+	var rooms []m.Room
+
+	for rows.Next() {
+		var room m.Room
+		err := rows.Scan(&room.ID, &room.RoomName, &room.IDGame.ID, &room.IDGame.Name, &room.IDGame.MaxPlayer)
+		if err != nil {
+			log.Println(err)
+			SendErrorResponse(w, 500, "Internal Server Error")
+			return
+		}
+
+		// Append the room to the list
+		rooms = append(rooms, room)
+	}
+
+	// Create the response
+	response := m.RoomsResponse{
+		Status:  200,
+		Message: "Success",
+		Data:    rooms,
+	}
+
+	// Convert the response to JSON
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Println(err)
+		SendErrorResponse(w, 500, "Internal Server Error")
 		return
 	}
+
+	// Send the JSON response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonResponse)
+}
