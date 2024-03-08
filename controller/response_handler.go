@@ -16,7 +16,7 @@ func SendErrorResponse(w http.ResponseWriter, kode int, message string) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func SendSuccesResponse(w http.ResponseWriter, kode int, message string) {
+func SendSuccessResponse(w http.ResponseWriter, kode int, message string) {
 	w.Header().Set("Content-Type", "application/json")
 	var response m.SuccessResponse
 	response.Status = kode

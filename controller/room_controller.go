@@ -34,7 +34,7 @@ func GetAllRooms(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		var room m.Room
-		err := rows.Scan(&room.ID, &room.RoomName, &room.IDGame.ID, &room.IDGame.Name, &room.IDGame.MaxPlayer)
+		err := rows.Scan(&room.id, &room.room_name, &room.id_game)
 		if err != nil {
 			log.Println(err)
 			SendErrorResponse(w, 500, "Internal Server Error")
@@ -52,7 +52,6 @@ func GetAllRooms(w http.ResponseWriter, r *http.Request) {
 		Data:    rooms,
 	}
 
-	// Convert the response to JSON
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Println(err)
@@ -60,7 +59,6 @@ func GetAllRooms(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send the JSON response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonResponse)

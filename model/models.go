@@ -25,7 +25,7 @@ type Game struct {
 type Room struct {
 	id        int    `json:"id"`
 	room_name string `json:"room_name"`
-	id_game   Game   `json:"id_game"`
+	id_game   int    `json:"id_game"`
 }
 
 type RoomResponse struct {
@@ -41,9 +41,9 @@ type RoomsResponse struct {
 }
 
 type Participant struct {
-	id         int  `json:"id"`
-	id_room    Room `json:"id_room"`
-	id_account Game `json:"id_account"`
+	id         int `json:"id"`
+	id_room    int `json:"id_room"`
+	id_account int `json:"id_account"`
 }
 
 type ErrorResponse struct {
